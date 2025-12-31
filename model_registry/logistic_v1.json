@@ -1,0 +1,25 @@
+{
+  "model_id": "logistic_v1",
+  "version": "1.0.0",
+
+  "description": "Encrypted logistic regression for binary classification",
+
+  "he_scheme": "CKKS",
+
+  "encryption_parameters": {
+    "poly_modulus_degree": 16384,
+    "scale": 1073741824,
+    "coeff_modulus_bits": [60, 30, 30, 60],
+    "max_multiplicative_depth": 2
+  },
+
+  "inference": {
+    "input_dimension": 8,
+    "output_dimension": 1,
+    "activation": "polynomial_sigmoid_v1"
+  },
+
+  "constraints": {
+    "max_batch_size": 16
+  }
+}

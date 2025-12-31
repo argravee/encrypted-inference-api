@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "model_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "string"
+    },
+    "diagnostics": {
+      "type": "object",
+      "properties": {
+        "requested_batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "processed_batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "batch_truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "requested_batch_size",
+        "processed_batch_size",
+        "batch_truncated"
+      ]
+    }
+  },
+  "required": [
+    "model_id",
+    "version",
+    "payload"
+  ]
+}

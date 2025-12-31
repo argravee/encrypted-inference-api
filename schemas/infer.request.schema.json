@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string" },
+    "version": { "type": "string" },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "encoding": { "type": "string" },
+          "payload": { "type": "string" }
+        },
+        "required": ["encoding", "payload"]
+      }
+    }
+  },
+  "required": ["model_id", "version", "inputs"]
+}
