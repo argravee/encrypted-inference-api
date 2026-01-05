@@ -41,7 +41,7 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
     if not model_files:
         raise RegistryError("No model registry files found")
 
-    registry: Dict[str, ModelDefinition] = {}
+    registry: dict[tuple[str, str], ModelDefinition]= {}
 
     for path in model_files:
         try:
@@ -76,7 +76,24 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
         if model_id in registry:
             raise RegistryError(f"Duplicate model_id detected: {model_id}")
 
-        registry[model_id] = ModelDefinition(
+        identity = (model_id, version)
+
+        if identity in registry:
+            raise RegistryError(
+                f"Duplicate model identity detected: model_id={model_id}, version={version}"
+            )
+
+        if not registry:
+            raise RegistryError(f"Registry is empty")
+
+        if not any(
+            model.raw["scheme"]=="CKKS"
+            for model in registry.values()
+        ):
+            raise RegistryError("Model registry contains no CKKS compatible models")
+
+
+        registry[identity] = ModelDefinition(
             model_id=model_id,
             version=version,
             raw=data,
