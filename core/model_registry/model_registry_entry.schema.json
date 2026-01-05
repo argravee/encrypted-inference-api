@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["model_id","version","description","he_scheme"],
+  "properties": {
+    "model_id": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "he_scheme": { "type": "string",
+    "enum": ["CKKS"]},
+
+    "encryption_parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["poly_modulus_degree","scale","coeff_modulus_bits","max_multiplicative_depth"],
+      "properties": {
+        "poly_modulus_degree":{"type": "integer"},
+        "scale": {"type": "integer"},
+        "coeff_modulus_bits": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 1
+        },
+        "max_multiplicative_depth": {"type": "integer"}
+      }
+    },
+    "inference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_dimension","output_dimension","activation"],
+      "properties": {
+        "input_dimension": {"type": "integer"},
+        "output_dimension": {"type": "integer"},
+        "activation": {"type": "string",
+          "enum": ["polynomial_sigmoid_v1"]
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_batch_size"],
+      "properties": {
+        "max_batch_size": {"type": "integer",
+        "minimum": 1,
+        "maximum": 1024}
+      }
+    }
+  }
+}

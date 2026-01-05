@@ -2,6 +2,12 @@ from pathlib import Path
 import json
 from dataclasses import dataclass
 from typing import Dict, Any, List
+#TODO: Invoke schema validation on each parsed registry JSON before extracting fields
+#TODO: Invoke semantic validation on each schema-valid registry JSON
+#TODO: Enforce validation order: JSON parse → schema validation → semantic validation → registry-wide checks
+#TODO: Convert all validation failures into fatal RegistryError exceptions
+#TODO: Distinguish schema vs semantic validation failures in raised errors
+#TODO: Ensure loader remains framework-agnostic (no FastAPI imports)
 
 
 REGISTRY_DIR = Path("model_registry")

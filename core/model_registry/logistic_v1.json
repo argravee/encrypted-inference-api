@@ -1,9 +1,7 @@
 {
   "model_id": "logistic_v1",
   "version": "1.0.0",
-
   "description": "Encrypted logistic regression for binary classification",
-
   "he_scheme": "CKKS",
 
   "encryption_parameters": {
