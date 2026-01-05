@@ -2,13 +2,8 @@ from pathlib import Path
 import json
 from dataclasses import dataclass
 from typing import Dict, Any, List
-#TODO: Invoke schema validation on each parsed registry JSON before extracting fields
-#TODO: Invoke semantic validation on each schema-valid registry JSON
-#TODO: Enforce validation order: JSON parse → schema validation → semantic validation → registry-wide checks
-#TODO: Convert all validation failures into fatal RegistryError exceptions
-#TODO: Distinguish schema vs semantic validation failures in raised errors
-#TODO: Ensure loader remains framework-agnostic (no FastAPI imports)
-
+from core.model_registry.schema_validation import validate_model_registry_entry
+from core.model_registry.semantic_validation import semantic_model_registry_validation
 
 REGISTRY_DIR = Path("model_registry")
 
@@ -54,6 +49,21 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             raise RegistryError(f"Invalid JSON in {path.name}: {e}") from e
+
+        try:
+            validate_model_registry_entry(data)
+        except Exception as e:
+            raise RegistryError(
+                f"Schema validation failed for {path.name}: {e}"
+            ) from e
+
+        try:
+            semantic_model_registry_validation(data)
+        except Exception as e:
+            raise RegistryError(
+                f"Semantic validation failed for {path.name}: {e}"
+            ) from e
+
 
         try:
             model_id = data["model_id"]
