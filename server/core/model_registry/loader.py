@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 from core.model_registry.schema_validation import validate_model_registry_entry
 from core.model_registry.semantic_validation import semantic_model_registry_validation
 
-REGISTRY_DIR = Path("model_registry")
+REGISTRY_DIR = Path(__file__).resolve().parent
 
 
 class RegistryError(Exception):
@@ -36,7 +36,12 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
     if not REGISTRY_DIR.is_dir():
         raise RegistryError(f"Model registry path is not a directory: {REGISTRY_DIR}")
 
-    model_files = sorted(REGISTRY_DIR.glob("*.json"))
+    model_files = [
+        p for p in REGISTRY_DIR.glob("*.json")
+        if p.name != "model_registry_entry.schema.json"
+    ]
+
+
 
     if not model_files:
         raise RegistryError("No model registry files found")
@@ -83,15 +88,6 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
                 f"Duplicate model identity detected: model_id={model_id}, version={version}"
             )
 
-        if not registry:
-            raise RegistryError(f"Registry is empty")
-
-        if not any(
-            model.raw["scheme"]=="CKKS"
-            for model in registry.values()
-        ):
-            raise RegistryError("Model registry contains no CKKS compatible models")
-
 
         registry[identity] = ModelDefinition(
             model_id=model_id,
@@ -99,4 +95,12 @@ def load_model_registry() -> Dict[str, ModelDefinition]:
             raw=data,
         )
 
+        if not registry:
+            raise RegistryError(f"Registry is empty")
+
+    if not any(
+            model.raw["he_scheme"]=="CKKS"
+            for model in registry.values()
+    ):
+        raise RegistryError("Model registry contains no CKKS compatible models")
     return registry

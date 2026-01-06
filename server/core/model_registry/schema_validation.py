@@ -1,13 +1,13 @@
 from json import JSONDecodeError
 from pathlib import Path
 import json
-from jsonschema import ValidationError
+import jsonschema
 from typing import Any
 
 from pydantic import ValidationError
 
 BASE_DIR = Path(__file__).resolve().parent
-SCHEMA_PATH = BASE_DIR / "model_registry_entry.schema.json"
+SCHEMA_PATH = Path(__file__).resolve().parent / "model_registry_entry.schema.json"
 
 if not SCHEMA_PATH.exists():
     raise RuntimeError(f"Schema file not found: {SCHEMA_PATH}")
