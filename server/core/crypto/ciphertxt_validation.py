@@ -26,6 +26,9 @@ def validate_ciphertext_structure(
     except CiphertextDeserializationError:
         raise
 
+    if ct is None:
+        raise CiphertextDeserializationError("cipher deserialized to None")
+
     # 2. Verify scheme matches expected HE scheme
     if model_meta.raw["he_scheme"] != "CKKS":
         raise CiphertextIncompatibleError("Model expects CKKS")
@@ -35,9 +38,5 @@ def validate_ciphertext_structure(
 
     # 4. Sanity-check scale (CKKS only)
     backend.assert_correct_scale(ct,context)
-
-    # 5. Ensure ciphertext has data
-    if ct is None:
-        raise CiphertextDeserializationError("cipher deserialized to None")
 
     return ct
