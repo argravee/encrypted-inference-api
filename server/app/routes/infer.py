@@ -7,6 +7,7 @@ from core.crypto.dependencies import (
     get_crypto_backend,
     get_crypto_context,
 )
+from core.jobs.queue import enqueue_job, dequeue_worker
 from core.model_registry.registry import MODEL_REGISTRY
 from core.protocol.envelope_validation import validate_envelope
 
@@ -27,12 +28,14 @@ def infer(
     if model_meta is None:
         raise HTTPException(status_code=404, detail="Unknown model")
 
-    ct = validate_ciphertext_structure(
+    validate_ciphertext_structure(
         raw_ciphertext=raw_ciphertxt,
         model_meta=model_meta,
         context=context,
         backend=backend,
     )
-    return {"status": "accepted"}
+    job_id = enqueue_job(model_id=model_id, ciphertext_b64=envelope["ciphertext"])
+    return {"status": "accepted", "job_id": job_id}
+
 
 
