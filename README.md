@@ -16,6 +16,20 @@ The focus of this project is **protocol correctness, clarity, and adoptability**
 
 ---
 
+## What is implemented (v1)
+
+- Protocol-level API definition for encrypted inference
+
+- JSON Schemas defining request, response, and error contracts
+
+- OpenAPI 3.1 specification suitable for tooling and SDK generation
+
+- CKKS ciphertext validation rules (structure, compatibility, scale sanity)
+
+- A reference implementation of ciphertext validation using Pyfhel
+
+- End-to-end encrypted round-trip tests (encrypt → serialize → validate → decrypt)
+---
 ## Non-Goals
 
 This repository does **not**:
@@ -44,20 +58,25 @@ considered a protocol failure.
 - `openapi.yaml`  
   OpenAPI 3.1 specification that formally encodes the v1 protocol for tooling,
   validation, and SDK generation.
-
+- `server/`
+  Reference implementation focusing on correctness and validation semantics
 - `docs/api/examples/`  
   Example requests and responses for reference and testing.
-
+- `tests/`
+  End-to-end tests validating encrypted ciphertext handling.
 ---
 
-## Status
+## Reference Implementation Status
 
-The **v1 protocol specification is complete and frozen**.
+A reference server implementation is
+included to validate protocol correctness and cryptographic handling.
 
-A reference server implementation is planned as a subsequent phase and will
-conform strictly to the published protocol, schemas, and OpenAPI definition.
-
-
+The implementation prioritizes:
+- strict validation before inference
+- deterministic cryptographic context usage
+- safe rejection of malformed or incompatible ciphertexts
+  It is not intended to be production-ready, but serves as a correctness 
+- and integration reference.
 ---
 
 ## Versioning
