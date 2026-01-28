@@ -5,3 +5,4 @@ Pyfhel==3.5.0
 numpy
 PyYAML
 jsonschema
+pytest
