@@ -7,12 +7,14 @@ from core.model_registry.semantic_validation import semantic_model_registry_vali
 
 REGISTRY_DIR = Path(__file__).resolve().parent
 
-
+#TODO: move into its own errors file
 class RegistryError(Exception):
     """Raised when the model registry is invalid."""
     pass
 
-
+"""
+Creates a dataclass to hold the extracted strings from the model
+"""
 @dataclass(frozen=True)
 class ModelDefinition:
     model_id: str

@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Contract for valid model entries",
   "type": "object",
   "additionalProperties": false,
   "required": ["model_id","version","description","he_scheme"],
