@@ -1,4 +1,4 @@
-# core/crypto/backends/pyfhel_ckks.py
+# core/crypto/backends/backend.py
 from Pyfhel import Pyfhel, PyCtxt
 from core.crypto.errors import CiphertextDeserializationError
 

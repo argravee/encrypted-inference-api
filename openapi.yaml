@@ -1,0 +1,170 @@
+openapi: 3.1.0
+info:
+  title: Encrypted Inference API
+  description: >
+    Protocol-level API for privacy-preserving machine learning inference
+    using CKKS homomorphic encryption. The server validates encrypted inputs
+    and executes inference asynchronously without accessing plaintext data.
+  version: v1
+
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /models:
+    get:
+      summary: List supported encrypted models
+      responses:
+        "200":
+          description: Validated model registry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetModelsResponse"
+
+  /infer:
+    post:
+      summary: Submit encrypted inference request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InferRequest"
+      responses:
+        "202":
+          description: Inference job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferAccepted"
+        "400":
+          description: Invalid request
+        "404":
+          description: Unknown model
+        "409":
+          description: Incompatible ciphertext
+        "413":
+          description: Payload too large
+        "503":
+          description: Crypto backend unavailable
+
+  /jobs/{job_id}:
+    get:
+      summary: Retrieve inference job status and result
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobStatus"
+        "404":
+          description: Unknown job ID
+
+  /keys:
+    get:
+      summary: Retrieve public cryptographic material
+      responses:
+        "200":
+          description: Public keys for client-side encryption
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "503":
+          description: Crypto context not initialized
+
+components:
+  schemas:
+    GetModelsResponse:
+      type: object
+      required: [api_version, models]
+      properties:
+        api_version:
+          type: string
+          example: v1
+        models:
+          type: array
+          items:
+            type: object
+            required: [model_id, version, he_scheme]
+            properties:
+              model_id:
+                type: string
+              version:
+                type: string
+              he_scheme:
+                type: string
+                example: CKKS
+
+    InferRequest:
+      type: object
+      required: [model_id, version, inputs]
+      properties:
+        model_id:
+          type: string
+        version:
+          type: string
+        inputs:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [encoding, payload]
+            properties:
+              encoding:
+                type: string
+                example: base64
+              payload:
+                type: string
+                description: Base64-encoded ciphertext bytes
+
+    InferAccepted:
+      type: object
+      required: [job_id, status]
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          example: accepted
+
+    JobStatus:
+      type: object
+      required: [job_id, status]
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, done, failed]
+        result:
+          type: string
+          nullable: true
+          description: Encrypted result payload (base64)
+        error_message:
+          type: string
+          nullable: true
