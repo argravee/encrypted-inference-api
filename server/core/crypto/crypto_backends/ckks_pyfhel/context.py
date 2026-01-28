@@ -1,11 +1,9 @@
 from Pyfhel import Pyfhel
 from dataclasses import dataclass
 
-"""context.py
-├─ choose CKKS parameters
-├─ create Pyfhel object
-├─ generate context
-└─ expose CONTEXT
+"""
+sets params for CKKS encryption
+generates module level context
 """
 
 @dataclass(frozen=True)
@@ -25,3 +23,5 @@ def generate_ckks_context(params: CKKSParams)-> Pyfhel:
         qi_sizes=list(params.coeff_modulus_bits),
     )
     return he
+
+CKKS_CONTEXT = generate_ckks_context(CKKSParams())
