@@ -1,14 +1,16 @@
-from fastapi import HTTPException
-from core.crypto.backend import CryptoBackend
+from crypto_backends.ckks_pyfhel.backend import PyfhelCKKSBackend
+from crypto_backends.ckks_pyfhel.context import CKKS_CONTEXT
 
-def get_crypto_backend()->CryptoBackend:
-    raise HTTPException(status_code=503,detail="Cryptobackend.py not configured")
+
+def get_crypto_backend():
+    """
+    Returns the concrete crypto backend implementation.
+    """
+    return PyfhelCKKSBackend()
 
 
 def get_crypto_context():
-    raise HTTPException(
-        status_code=503,
-        detail="Crypto context not configured"
-        # Backend-specific cryptographic
-        # context (to be provided by implementation)
-    )
+    """
+    Returns the server-wide CKKS context.
+    """
+    return CKKS_CONTEXT
