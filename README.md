@@ -3,7 +3,7 @@
 A protocol and reference specification for privacy-preserving machine learning
 inference using homomorphic encryption.
 
----
+
 
 ## Overview
 
@@ -22,7 +22,7 @@ This specification is intended for:
 - Researchers evaluating encrypted inference protocols
 - Teams implementing compatible clients, servers, or SDKs
 
----
+
 ## Non-Goals
 
 This repository does **not**:
@@ -36,7 +36,7 @@ This repository does **not**:
 Approximation error is an inherent property of approximate homomorphic encryption schemes and is not
 considered a protocol failure.
 
----
+
 ## Status
 
 The v1 protocol specification is defined and partially stabilized, with a working reference backend focused on cryptographic correctness and validation semantics.
@@ -59,7 +59,7 @@ validation rather than adding new endpoints.
 - Expand negative and adversarial end-to-end tests (schema violations, scale mismatches, incompatible contexts)
 - Formalize and verify conformance between JSON Schemas, OpenAPI definitions, and runtime validation behavior
 
----
+
 
 ## Repository Structure
 
@@ -80,7 +80,7 @@ validation rather than adding new endpoints.
   Example requests and responses for reference and testing.
 - `tests/`
   End-to-end tests validating encrypted ciphertext handling.
----
+
 ## High-Level Flow
 
 1. Client queries `/models` to discover supported encrypted models
@@ -90,7 +90,7 @@ validation rather than adding new endpoints.
 5. Server performs homomorphic evaluation
 6. Encrypted result is returned to the client
 7. Client decrypts result locally
----
+
 ## Reference Implementation 
 
 A reference server implementation is
@@ -102,7 +102,7 @@ The implementation prioritizes:
 - safe rejection of malformed or incompatible ciphertexts
 - It is not intended to be production-ready, but serves as a correctness 
 and integration reference.
----
+
 
 ## Versioning
 
@@ -112,7 +112,7 @@ Breaking changes will only occur in major versions.
 All `v1.x` releases preserve wire compatibility and error semantics. Further details can be
 found at `docs/architecture/versioning.md`
 
----
+
 
 ## Conformance
 
@@ -131,9 +131,8 @@ these contracts is non-normative and may change without
 constituting a protocol revision.
 
 
----
+
 
 ## License
 
 Licensed under the Apache License, Version 2.0.
-You may obtain a copy of the License in the LICENSE file at the root of this repository.
