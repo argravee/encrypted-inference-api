@@ -55,11 +55,22 @@ validation rather than adding new endpoints.
 
 ### What Remains
 
-- Harden CKKS validation against malformed and adversarial ciphertext inputs
-- Expand negative and adversarial end-to-end tests (schema violations, scale mismatches, incompatible contexts)
-- Formalize and verify conformance between JSON Schemas, OpenAPI definitions, and runtime validation behavior
+#### Core Security Hardening
 
+- CKKS adversarial validation hardening
+- Negative input expansion
+- Runtime/schema conformance verification
 
+#### System Completeness
+
+- Batched inference fully validated
+- Full E2E lifecycle tests automated
+- Error mapping finalized
+#### Documentation & Release
+
+- Threat model
+- Architecture diagram
+- Demo notebook
 
 ## Repository Structure
 
