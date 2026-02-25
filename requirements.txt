@@ -6,3 +6,4 @@ numpy
 PyYAML
 jsonschema
 pytest
+requests
