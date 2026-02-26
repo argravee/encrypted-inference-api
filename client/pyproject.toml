@@ -1,0 +1,11 @@
+[project]
+name = "heapi-client"
+version = "0.1.0"
+description = "Python client for Encrypted Inference API"
+requires-python = ">=3.10"
+
+dependencies = [
+    "httpx",
+    "jsonschema",
+    "pyfhel"
+]
