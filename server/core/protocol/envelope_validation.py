@@ -1,24 +1,24 @@
-from core.protocol.errors import (
-    MissingApiVersionError,
-    UnknownRequestTypeError,
-    MissingPayloadError, InvalidEnvelopeError, UnsupportedApiVersionError, MissingRequestTypeError,
-)
+from functools import lru_cache
+import json
+from pathlib import Path
+
+from jsonschema import validate
+
+
+@lru_cache(maxsize=1)
+def _load_infer_request_schema() -> dict:
+    schema_path = (
+            Path(__file__).resolve().parents[3]
+            / "schemas"
+            / "infer.request.schema.json"
+    )
+
+    with schema_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
 
 def validate_envelope(envelope: dict) -> None:
     if not isinstance(envelope, dict):
-        raise InvalidEnvelopeError()
+        raise ValueError("Infer request body must be a JSON object")
 
-    if "api_version" not in envelope:
-        raise MissingApiVersionError()
-
-    if envelope["api_version"] != "v1":
-        raise UnsupportedApiVersionError(envelope["api_version"])
-
-    if "type" not in envelope:
-        raise MissingRequestTypeError()
-
-    if envelope["type"] not in {"infer"}:
-        raise UnknownRequestTypeError(envelope["type"])
-
-    if "payload" not in envelope:
-        raise MissingPayloadError()
+    validate(instance=envelope, schema=_load_infer_request_schema())

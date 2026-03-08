@@ -13,10 +13,18 @@ from .errors import SchemaValidationError
 class Client:
     """
     High-level SDK interface for encrypted inference.
+
+    values may be:
+    - a single sample: List[float]
+    - a batch of samples: List[List[float]]
     """
 
-    def __init__(self, base_url: str):
-        self.api = API(base_url)
+    def __init__(self, base_url: str, tenant_id: str | None = None):
+        default_headers = {}
+        if tenant_id:
+            default_headers["X-Tenant-ID"] = tenant_id
+
+        self.api = API(base_url, default_headers=default_headers)
         self.discovery = Discovery(self.api)
         self.infer_api = Infer(self.api)
         self.jobs = Jobs(self.api)
@@ -26,24 +34,7 @@ class Client:
             model_id: str,
             values: List[float] | List[List[float]],
             version: str | None = None,
-    ):
-        """
-        Perform encrypted inference end-to-end.
-
-        Accepts either:
-        - a single input vector: List[float]
-        - a batch of input vectors: List[List[float]]
-
-        Steps:
-        1. Discover model metadata
-        2. Normalize values into a batch
-        3. Validate input dimension and batch size
-        4. Create a CKKS session from model metadata
-        5. Encrypt each input vector
-        6. Submit inference
-        7. Poll job status
-        8. Decrypt result
-        """
+    ) -> list[float]:
         model = self.discovery.get_model(model_id)
 
         if version is None:
@@ -59,24 +50,22 @@ class Client:
         self._validate_inputs_against_model(model, batch)
 
         session = CKKS_Session.from_model(model)
-        ciphertexts = [session.encrypt(vector) for vector in batch]
+        ciphertexts = session.encrypt_feature_batch(batch)
 
         job = self.infer_api.submit(
             model_id=model_id,
             version=version,
+            batch_size=len(batch),
             inputs=ciphertexts,
         )
 
         response = self.jobs.wait(job["job_id"])
-        return session.decrypt(response)
+        return session.decrypt_slots(response, batch_size=len(batch))
 
     def _normalize_batch(
             self,
             values: List[float] | List[List[float]],
     ) -> List[List[float]]:
-        """
-        Normalize either a single vector or a batch into List[List[float]].
-        """
         if not isinstance(values, list) or len(values) == 0:
             raise SchemaValidationError(
                 "values must be a non-empty list of floats or list of float vectors",
@@ -85,7 +74,6 @@ class Client:
 
         first = values[0]
 
-        # Single vector: [0.1, 0.2, 0.3]
         if isinstance(first, (int, float)):
             if not all(isinstance(x, (int, float)) for x in values):
                 raise SchemaValidationError(
@@ -94,7 +82,6 @@ class Client:
                 )
             return [list(values)]
 
-        # Batch: [[...], [...]]
         if isinstance(first, list):
             for vector in values:
                 if not isinstance(vector, list):
@@ -124,9 +111,6 @@ class Client:
             model: dict,
             batch: List[List[float]],
     ) -> None:
-        """
-        Validate client inputs against discovered model constraints.
-        """
         inference = model.get("inference", {})
         constraints = model.get("constraints", {})
 

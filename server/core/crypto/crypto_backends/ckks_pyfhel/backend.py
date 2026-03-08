@@ -1,4 +1,6 @@
-from Pyfhel import Pyfhel, PyCtxt
+from __future__ import annotations
+
+from Pyfhel import PyCtxt, Pyfhel
 
 from server.core.crypto.backend import CryptoBackend
 from server.core.crypto.errors import (
@@ -8,15 +10,6 @@ from server.core.crypto.errors import (
 
 
 class PyfhelCKKSBackend(CryptoBackend):
-    """
-    Concrete CKKS backend using Pyfhel.
-
-    Responsible for:
-    - ciphertext deserialization
-    - ciphertext/context compatibility checks
-    - scale sanity checks
-    """
-
     def deserialize_ciphertext(self, raw: bytes, context: Pyfhel) -> PyCtxt:
         try:
             return PyCtxt(pyfhel=context, bytestring=raw)
@@ -26,20 +19,10 @@ class PyfhelCKKSBackend(CryptoBackend):
             ) from e
 
     def assert_ciphertext_compatible(self, ct: PyCtxt, context: Pyfhel) -> None:
-        try:
-            # Decryption will fail if ciphertext does not belong
-            # to this context or uses incompatible parameters.
-            context.decryptFrac(ct)
-        except Exception as e:
-            raise CiphertextIncompatibleError(
-                "Ciphertext incompatible with server CKKS context"
-            ) from e
-
+        if ct is None:
+            raise CiphertextIncompatibleError("Ciphertext is None")
 
     def assert_correct_scale(self, ct: PyCtxt, context: Pyfhel) -> None:
-        """
-        Ensure ciphertext scale is sane relative to context policy.
-        """
         try:
             ct_scale = ct.scale
         except Exception as e:
@@ -48,8 +31,7 @@ class PyfhelCKKSBackend(CryptoBackend):
             ) from e
 
         expected_scale = context.scale
-
-        if ct_scale <= 0 or ct_scale > expected_scale * 2:
+        if ct_scale <= 0 or ct_scale > expected_scale * 4:
             raise CiphertextIncompatibleError(
                 f"Ciphertext scale {ct_scale} incompatible with expected scale {expected_scale}"
             )

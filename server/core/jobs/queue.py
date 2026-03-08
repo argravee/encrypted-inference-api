@@ -1,41 +1,74 @@
-#TODO: upgrade to Redis+RQ
-from datetime import datetime
-from queue import Queue, Empty
-from time import sleep
+from __future__ import annotations
+
+from datetime import datetime, timezone
 from uuid import uuid4
 
-job_queue = Queue(maxsize=1000)
+jobs: dict[str, dict] = {}
 
 
-def new_job(job_id: str, model_id: str):
-    return{
-        "job_id": job_id,
-        "model_id": model_id,
-        "status": "queued",
-        "created_at": datetime.utcnow().isoformat(),
-        "ciphertext_b64": None,
-        "error_message": None
-    }
-jobs = {}
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
-def enqueue_job(model_id: str, ciphertext_b64: str) -> str:
+
+def reset_jobs() -> None:
+    jobs.clear()
+
+
+def create_job(
+        tenant_id: str,
+        model_id: str,
+        version: str,
+        requested_batch_size: int,
+) -> str:
     job_id = uuid4().hex
-    if job_queue.full():
-        raise RuntimeError(f"Failed to enqueue job {job_id}: Queue Full")
-
-    try:
-        job_queue.put(job_id)
-    except Exception as e:
-        raise RuntimeError(f"Failed to enqueue job {job_id}")
-
-    jobs[job_id] = new_job(job_id,model_id)
-    jobs[job_id]["ciphertext_b64"] = ciphertext_b64
+    jobs[job_id] = {
+        "job_id": job_id,
+        "tenant_id": tenant_id,
+        "model_id": model_id,
+        "version": version,
+        "status": "queued",
+        "requested_batch_size": requested_batch_size,
+        "created_at": _utc_now_iso(),
+        "started_at": None,
+        "completed_at": None,
+        "result": None,
+        "error_message": None,
+    }
     return job_id
 
-def dequeue_worker():
-    try:
-        current_job = job_queue.get_nowait()
-    except Empty:
-        sleep(0.1)
-        return
-    jobs[current_job]["status"]="running"
+
+def start_job(job_id: str) -> None:
+    jobs[job_id]["status"] = "running"
+    jobs[job_id]["started_at"] = _utc_now_iso()
+
+
+def complete_job(
+        job_id: str,
+        payload: str,
+        requested_batch_size: int,
+        processed_batch_size: int,
+) -> None:
+    job = jobs[job_id]
+    job["status"] = "completed"
+    job["completed_at"] = _utc_now_iso()
+    job["result"] = {
+        "model_id": job["model_id"],
+        "version": job["version"],
+        "payload": payload,
+        "diagnostics": {
+            "requested_batch_size": requested_batch_size,
+            "processed_batch_size": processed_batch_size,
+            "batch_truncated": processed_batch_size < requested_batch_size,
+        },
+    }
+
+
+def fail_job(job_id: str, error_message: str) -> None:
+    job = jobs[job_id]
+    job["status"] = "failed"
+    job["completed_at"] = _utc_now_iso()
+    job["error_message"] = error_message
+
+
+def get_job(job_id: str) -> dict | None:
+    return jobs.get(job_id)

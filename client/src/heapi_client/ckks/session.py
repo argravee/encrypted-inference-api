@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import numpy as np
 from typing import List
 
 from Pyfhel import Pyfhel
@@ -11,19 +11,13 @@ from .wire import deserialize_ciphertext, serialize_ciphertext
 class CKKS_Session:
     """
     Client-side CKKS cryptographic session.
-
-    Owns:
-    - context
-    - secret key
-    - encryption
-    - decryption
     """
 
     def __init__(
             self,
-            poly_modulus_degree: int = 8192,
-            coeff_modulus_bits: List[int] = [60, 40, 40, 60],
-            scale: float = 2**40,
+            poly_modulus_degree: int = 16384,
+            coeff_modulus_bits: List[int] = [60, 30, 30, 60],
+            scale: float = 2**30,
     ):
         try:
             self.he = Pyfhel()
@@ -37,14 +31,30 @@ class CKKS_Session:
         except Exception as exc:
             raise CryptoError(f"Failed to initialize CKKS session: {exc}") from exc
 
-    def encrypt(self, values: List[float]) -> dict:
+    def encrypt(self, values: list[float]) -> dict:
         try:
-            ct = self.he.encryptFrac(values)
+            arr = np.ascontiguousarray(values, dtype=np.float64)
+            ct = self.he.encryptFrac(arr)
             return serialize_ciphertext(ct)
         except Exception as exc:
             raise CryptoError(f"Encryption failed: {exc}") from exc
 
-    def decrypt(self, response: dict):
+    def encrypt_feature_batch(self, batch: List[List[float]]) -> list[dict]:
+        """
+        Convert batch [num_samples][num_features] into feature columns and
+        encrypt one ciphertext per feature.
+        """
+        if not batch:
+            raise CryptoError("Cannot encrypt an empty batch")
+
+        input_dimension = len(batch[0])
+        feature_columns = [
+            [float(sample[i]) for sample in batch]
+            for i in range(input_dimension)
+        ]
+        return [self.encrypt(column) for column in feature_columns]
+
+    def decrypt_slots(self, response: dict, batch_size: int) -> list[float]:
         if "payload" not in response:
             raise SchemaValidationError(
                 "Inference response missing 'payload' field",
@@ -53,18 +63,15 @@ class CKKS_Session:
 
         try:
             ct = deserialize_ciphertext(self.he, response["payload"])
-            return self.he.decryptFrac(ct)
+            values = self.he.decryptFrac(ct)
+            if hasattr(values, "tolist"):
+                values = values.tolist()
+            return [float(v) for v in values[:batch_size]]
         except Exception as exc:
             raise CryptoError(f"Decryption failed: {exc}") from exc
 
     @classmethod
     def from_model(cls, model_metadata: dict):
-        """
-        Create CKKS session from discovered model metadata.
-        Expected model shape includes:
-        - he_scheme
-        - encryption_parameters
-        """
         scheme = model_metadata.get("he_scheme")
         if scheme != "CKKS":
             raise CryptoError(f"Unsupported HE scheme: {scheme}")

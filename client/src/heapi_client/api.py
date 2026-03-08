@@ -5,14 +5,30 @@ from .errors import APIError, ConnectionError
 
 
 class API:
-    def __init__(self, base_url: str, timeout: float = 5.0):
+    def __init__(
+            self,
+            base_url: str,
+            timeout: float = 5.0,
+            default_headers: dict[str, str] | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.default_headers = default_headers or {}
 
-    def get(self, path: str):
+    def _merge_headers(self, headers: dict[str, str] | None = None) -> dict[str, str]:
+        merged = dict(self.default_headers)
+        if headers:
+            merged.update(headers)
+        return merged
+
+    def get(self, path: str, headers: dict[str, str] | None = None):
         url = f"{self.base_url}/{path.lstrip('/')}"
         try:
-            response = requests.get(url, timeout=self.timeout)
+            response = requests.get(
+                url,
+                timeout=self.timeout,
+                headers=self._merge_headers(headers),
+            )
             response.raise_for_status()
             return response.json()
         except Timeout as exc:
@@ -31,7 +47,7 @@ class API:
                 details=details,
             ) from exc
 
-    def post(self, path: str, data=None, json=None):
+    def post(self, path: str, data=None, json=None, headers: dict[str, str] | None = None):
         url = f"{self.base_url}/{path.lstrip('/')}"
         try:
             response = requests.post(
@@ -39,6 +55,7 @@ class API:
                 data=data,
                 json=json,
                 timeout=self.timeout,
+                headers=self._merge_headers(headers),
             )
             response.raise_for_status()
             return response.json()

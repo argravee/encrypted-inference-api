@@ -3,38 +3,85 @@
   "$comment": "Contract for valid model entries",
   "type": "object",
   "additionalProperties": false,
-  "required": ["model_id","version","description","he_scheme"],
+  "required": [
+    "model_id",
+    "version",
+    "description",
+    "he_scheme",
+    "encryption_parameters",
+    "inference",
+    "parameters",
+    "activation_parameters",
+    "constraints"
+  ],
   "properties": {
     "model_id": { "type": "string" },
     "version": { "type": "string" },
     "description": { "type": "string" },
-    "he_scheme": { "type": "string",
-    "enum": ["CKKS"]},
-
+    "he_scheme": {
+      "type": "string",
+      "enum": ["CKKS"]
+    },
     "encryption_parameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["poly_modulus_degree","scale","coeff_modulus_bits","max_multiplicative_depth"],
+      "required": [
+        "poly_modulus_degree",
+        "scale",
+        "coeff_modulus_bits",
+        "max_multiplicative_depth"
+      ],
       "properties": {
-        "poly_modulus_degree":{"type": "integer"},
-        "scale": {"type": "integer"},
+        "poly_modulus_degree": { "type": "integer" },
+        "scale": { "type": "integer" },
         "coeff_modulus_bits": {
           "type": "array",
           "items": { "type": "integer" },
           "minItems": 1
         },
-        "max_multiplicative_depth": {"type": "integer"}
+        "max_multiplicative_depth": { "type": "integer" }
       }
     },
     "inference": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["input_dimension","output_dimension","activation"],
+      "required": ["input_dimension", "output_dimension", "activation"],
       "properties": {
-        "input_dimension": {"type": "integer"},
-        "output_dimension": {"type": "integer"},
-        "activation": {"type": "string",
+        "input_dimension": { "type": "integer" },
+        "output_dimension": { "type": "integer" },
+        "activation": {
+          "type": "string",
           "enum": ["polynomial_sigmoid_v1"]
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["weights", "bias"],
+      "properties": {
+        "weights": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 1
+        },
+        "bias": { "type": "number" }
+      }
+    },
+    "activation_parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "coefficients"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["polynomial_sigmoid_v1"]
+        },
+        "coefficients": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
         }
       }
     },
@@ -43,9 +90,11 @@
       "additionalProperties": false,
       "required": ["max_batch_size"],
       "properties": {
-        "max_batch_size": {"type": "integer",
-        "minimum": 1,
-        "maximum": 1024}
+        "max_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
       }
     }
   }

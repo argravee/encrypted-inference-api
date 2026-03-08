@@ -1,27 +1,34 @@
+from __future__ import annotations
+
+from typing import Any
+
 from Pyfhel import Pyfhel
-from dataclasses import dataclass
 
-"""
-sets params for CKKS encryption
-generates module level context
-"""
 
-@dataclass(frozen=True)
-class CKKSParams:
-    scheme: str = "CKKS"
-    polynomial_modulus_degree: int = 16384
-    coeff_modulus_bits: tuple[int,...] = (60, 30, 30, 60)
-    scale: int = 2**30
+def _get_param(params: Any, key: str, default: Any = None) -> Any:
+    if isinstance(params, dict):
+        return params.get(key, default)
+    return getattr(params, key, default)
 
-def generate_ckks_context(params: CKKSParams)-> Pyfhel:
+
+def generate_ckks_context(params) -> Pyfhel:
+    scheme = _get_param(params, "scheme", "CKKS")
+    poly_modulus_degree = _get_param(params, "poly_modulus_degree")
+    coeff_modulus_bits = _get_param(params, "coeff_modulus_bits")
+    scale = _get_param(params, "scale")
+
+    if poly_modulus_degree is None:
+        raise ValueError("Missing CKKS parameter: poly_modulus_degree")
+    if coeff_modulus_bits is None:
+        raise ValueError("Missing CKKS parameter: coeff_modulus_bits")
+    if scale is None:
+        raise ValueError("Missing CKKS parameter: scale")
 
     he = Pyfhel()
     he.contextGen(
-        scheme=params.scheme,
-        n=params.polynomial_modulus_degree,
-        scale=params.scale,
-        qi_sizes=list(params.coeff_modulus_bits),
+        scheme=scheme,
+        n=poly_modulus_degree,
+        scale=scale,
+        qi_sizes=coeff_modulus_bits,
     )
     return he
-
-CKKS_CONTEXT = generate_ckks_context(CKKSParams())

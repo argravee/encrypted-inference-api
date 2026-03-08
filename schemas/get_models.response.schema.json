@@ -1,30 +1,108 @@
 {
-  "api_version": "1.0.0",
-  "models": [
-    {
-      "model_id": "logistic_v1",
-      "version": "1.0.0",
-      "description": "Encrypted logistic regression for binary classification",
-      "he_scheme": "CKKS",
-      "encryption_parameters": {
-        "poly_modulus_degree": 16384,
-        "scale": 1073741824,
-        "coeff_modulus_bits": [
-          60,
-          30,
-          30,
-          60
-        ],
-        "max_multiplicative_depth": 2
-      },
-      "inference": {
-        "input_dimension": 8,
-        "output_dimension": 1,
-        "activation": "polynomial_sigmoid_v1"
-      },
-      "constraints": {
-        "max_batch_size": 16
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": { "type": "string" },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "model_id": { "type": "string" },
+          "version": { "type": "string" },
+          "description": { "type": "string" },
+          "he_scheme": {
+            "type": "string",
+            "enum": ["CKKS"]
+          },
+          "encryption_parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "poly_modulus_degree": { "type": "integer" },
+              "scale": { "type": "number" },
+              "coeff_modulus_bits": {
+                "type": "array",
+                "items": { "type": "integer" }
+              },
+              "max_multiplicative_depth": { "type": "integer" }
+            },
+            "required": [
+              "poly_modulus_degree",
+              "scale",
+              "coeff_modulus_bits",
+              "max_multiplicative_depth"
+            ]
+          },
+          "inference": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "input_dimension": { "type": "integer" },
+              "output_dimension": { "type": "integer" },
+              "activation": {
+                "type": "string",
+                "enum": ["polynomial_sigmoid_v1"]
+              }
+            },
+            "required": ["input_dimension", "output_dimension", "activation"]
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "weights": {
+                "type": "array",
+                "items": { "type": "number" }
+              },
+              "bias": { "type": "number" }
+            },
+            "required": ["weights", "bias"]
+          },
+          "activation_parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["polynomial_sigmoid_v1"]
+              },
+              "coefficients": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": ["kind", "coefficients"]
+          },
+          "constraints": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "max_batch_size": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": ["max_batch_size"]
+          }
+        },
+        "required": [
+          "model_id",
+          "version",
+          "description",
+          "he_scheme",
+          "encryption_parameters",
+          "inference",
+          "parameters",
+          "activation_parameters",
+          "constraints"
+        ]
       }
     }
-  ]
+  },
+  "required": ["api_version", "models"]
 }

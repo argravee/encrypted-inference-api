@@ -1,16 +1,18 @@
-# core/crypto/backend.py
-from typing import Protocol, Any
+from __future__ import annotations
 
-class CryptoBackend(Protocol):
+from abc import ABC, abstractmethod
+from typing import Any
+
+
+class CryptoBackend(ABC):
+    @abstractmethod
     def deserialize_ciphertext(self, raw: bytes, context: Any) -> Any:
-        """
-        Deserialize raw ciphertext bytes into a backend-specific ciphertext.
+        raise NotImplementedError
 
-        Must raise on failure.
-        """
-        ...
+    @abstractmethod
+    def assert_ciphertext_compatible(self, ct: Any, context: Any) -> None:
+        raise NotImplementedError
 
-    def assert_ciphertext_compatible(self,ct: Any, context: Any)->None:
-        ...
-    def assert_correct_scale(self,ct: Any, context: Any)->None:
-        ...
+    @abstractmethod
+    def assert_correct_scale(self, ct: Any, context: Any) -> None:
+        raise NotImplementedError
