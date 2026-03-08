@@ -159,20 +159,6 @@ An implementation is considered protocol-compliant if it:
 
 Implementation details such as scheduling, persistence, or execution strategy are non-normative unless explicitly documented as part of the protocol.
 
-## What Works Today
-
-At the time of writing, the repository includes working support for:
-
-* model discovery
-* CKKS client session construction from model metadata
-* local client encryption
-* encrypted inference submission
-* server-side ciphertext validation
-* homomorphic evaluation for the reference logistic model
-* encrypted result retrieval
-* local client decryption
-* automated SDK/server/integration testing
-
 ## What Still Remains
 
 The major next-step areas are:
