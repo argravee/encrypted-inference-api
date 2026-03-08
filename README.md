@@ -19,6 +19,21 @@ The server never needs the client’s secret key and never receives plaintext in
 
 This repository is focused on **protocol clarity, validation correctness, and implementation conformance**.
 
+## Intended Audience
+
+This specification is intended for:
+- Engineers building privacy-preserving ML systems
+- Researchers evaluating encrypted inference protocols
+- Teams implementing compatible clients, servers, or SDKs
+
+This repository aims to make encrypted inference easier to reason about and easier to implement correctly by emphasizing:
+
+- protocol stability
+- explicit structural contracts
+- strict validation before evaluation
+- clear separation between protocol and implementation details
+- backend/client decoupling
+
 ## Current Status
 
 The repository currently includes:
@@ -36,22 +51,6 @@ A full live round-trip is working:
 **discover model → build CKKS session → encrypt locally → submit ciphertext → server-side validate/evaluate → return ciphertext → decrypt locally**
 
 This is a **reference implementation**, not a production deployment.
-
-
-## Intended Audience
-
-This specification is intended for:
-- Engineers building privacy-preserving ML systems
-- Researchers evaluating encrypted inference protocols
-- Teams implementing compatible clients, servers, or SDKs
-
-This repository aims to make encrypted inference easier to reason about and easier to implement correctly by emphasizing:
-
-- protocol stability
-- explicit structural contracts
-- strict validation before evaluation
-- clear separation between protocol and implementation details
-- backend/client decoupling
 
 ## Non-Goals
 
