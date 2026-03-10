@@ -8,11 +8,17 @@ This repository focuses on protocol clarity, validation correctness, and impleme
 
 ## Motivation
 
-Encrypted inference systems can become ambiguous: protocol rules get mixed with backend details, validation becomes implicit, and clients become tightly coupled to a single implementation.
-
-This project instead defines a versioned wire contract first, then provides a Python reference implementation that demonstrates one valid way to satisfy that contract.
+Encrypted inference systems can become ambiguous: protocol rules get mixed with backend details, validation becomes implicit, and clients become tightly coupled to a single implementation. This project instead defines a versioned wire contract first, then provides a Python reference implementation that demonstrates one valid way to satisfy that contract.
 
 The goal is to make encrypted inference easier to reason about, easier to test, and easier to implement correctly.
+
+## Intended Audience
+
+This project is intended for:
+
+* engineers building privacy-preserving ML systems
+* researchers evaluating encrypted inference protocols
+* teams implementing compatible clients, servers, or SDKs
 
 ## At a Glance
 
