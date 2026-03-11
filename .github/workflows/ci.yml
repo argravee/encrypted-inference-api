@@ -22,8 +22,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-cov
-          pip install -e .
-
+          pip install -e ./client
       - name: Run SDK tests
         run: pytest tests/sdk -v --cov=.
 
