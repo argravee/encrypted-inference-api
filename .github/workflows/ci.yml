@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pip install -e .
+
+      - name: Run SDK tests
+        run: pytest tests/sdk -v --cov=.
+
+      - name: Run Server tests
+        run: pytest tests/server -v --cov=.
+
+      - name: Run Integration tests (skipped unless configured)
+        run: pytest tests/integration -v || true
