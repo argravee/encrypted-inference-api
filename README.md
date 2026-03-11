@@ -1,5 +1,9 @@
 ![CI](https://github.com/argravee/encrypted-inference-api/actions/workflows/ci.yml/badge.svg)
 ![coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-green)
+![Python](https://img.shields.io/badge/python-3.10+-blue)
+
+
 
 # Encrypted Inference API (v1.0.0)
 
