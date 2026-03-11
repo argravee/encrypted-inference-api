@@ -95,7 +95,7 @@ flowchart LR
     S9 --> C7
 ````
 
-A more detailed description is available in [`docs/architecture.md`](docs/architecture.md).
+A more detailed description is available at [`architecture.md`](docs/architecture/architecture.md).
 
 ## Quick Start
 
