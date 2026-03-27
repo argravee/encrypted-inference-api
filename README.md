@@ -45,6 +45,30 @@ The server is responsible for:
 - validating ciphertext structure and compatibility
 - performing homomorphic evaluation
 - storing and returning encrypted results
+- 
+## Benchmark Highlights
+
+For the reference `logistic_v1` model (`8` input features, `20` measured runs), the plaintext and encrypted inference paths now have a direct benchmark comparison:
+
+- **Plaintext mean latency:** `3.78 ms`
+- **Encrypted mean end-to-end latency:** `380.62 ms`
+- **Plaintext throughput:** `264.77 req/s`
+- **Encrypted throughput:** `2.63 req/s`
+- **Plaintext request size:** `87 B`
+- **Encrypted request size:** `12,585,046 B`
+- **Mean absolute error:** `2.52e-6`
+- **Max absolute error:** `5.53e-6`
+  
+The encrypted path preserves outputs very closely while introducing major latency and payload overhead relative to standard plaintext inference.
+
+### Encrypted timing breakdown
+
+- **Encryption:** `62.11 ms`
+- **Inference request:** `311.87 ms`
+- **Jobs fetch:** `5.57 ms`
+- **Decryption:** `1.07 ms`
+
+See [`docs/benchmarking.md`](docs/benchmarking.md) for methodology, raw metrics, and interpretation.
 
 ## Architecture
 
