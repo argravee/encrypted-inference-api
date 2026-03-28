@@ -12,7 +12,11 @@ class FakeResultCiphertext:
 
 def _stub_infer_execution(monkeypatch, payload_hex: str = "deadbeef"):
     monkeypatch.setattr(infer_route, "enforce_infer_rate_limit", lambda tenant_id: None)
-    monkeypatch.setattr(infer_route, "generate_ckks_context", lambda params: object())
+    monkeypatch.setattr(
+        infer_route,
+        "get_cached_ckks_context",
+        lambda scheme, poly_modulus_degree, coeff_modulus_bits, scale: object(),
+    )
     monkeypatch.setattr(
         infer_route,
         "validate_ciphertext_structure",

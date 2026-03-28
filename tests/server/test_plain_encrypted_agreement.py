@@ -1,12 +1,10 @@
 from fastapi.testclient import TestClient
+import numpy as np
+from Pyfhel import PyCtxt
 
 from server.app.main import app
-from server.core.model_registry.registry import MODEL_REGISTRY
 from server.core.crypto.crypto_backends.ckks_pyfhel.context import generate_ckks_context
-import numpy as np
-
-
-client = TestClient(app)
+from server.core.model_registry.registry import MODEL_REGISTRY
 
 
 def _build_crypto_params(model_raw: dict) -> dict:
@@ -17,6 +15,7 @@ def _build_crypto_params(model_raw: dict) -> dict:
         "coeff_modulus_bits": encryption_parameters["coeff_modulus_bits"],
         "scale": encryption_parameters["scale"],
     }
+
 
 def _encrypt_feature_vector(feature_vector: list[float], context) -> list[dict]:
     encrypted_inputs = []
@@ -35,23 +34,22 @@ def _encrypt_feature_vector(feature_vector: list[float], context) -> list[dict]:
 
 
 def _decrypt_single_output(payload_hex: str, context) -> float:
-    from Pyfhel import PyCtxt
-
     ct = PyCtxt(pyfhel=context, bytestring=bytes.fromhex(payload_hex))
     decrypted = context.decryptFrac(ct)
 
-    # Pyfhel may return a scalar-like value or a sequence depending on packing.
     if isinstance(decrypted, (list, tuple)):
         return float(decrypted[0])
 
     try:
         return float(decrypted)
     except TypeError:
-        # Handles numpy-like arrays
         return float(decrypted[0])
 
 
 def test_plain_and_encrypted_inference_agree():
+    app.dependency_overrides.clear()
+    client = TestClient(app)
+
     model_id = "logistic_v1"
     version = "1.0.0"
 
@@ -70,12 +68,11 @@ def test_plain_and_encrypted_inference_agree():
             "inputs": feature_vector,
         },
     )
-
     assert plain_response.status_code == 200, plain_response.text
     plain_body = plain_response.json()
     plain_output = float(plain_body["outputs"][0])
 
-    # 2. Build CKKS context for the same model
+    # 2. Build client-side CKKS context
     crypto_params = _build_crypto_params(model_raw)
     context = generate_ckks_context(crypto_params)
     context.keyGen()
@@ -93,7 +90,6 @@ def test_plain_and_encrypted_inference_agree():
             "inputs": encrypted_inputs,
         },
     )
-
     assert infer_response.status_code == 200, infer_response.text
     infer_body = infer_response.json()
     job_id = infer_body["job_id"]
@@ -102,8 +98,6 @@ def test_plain_and_encrypted_inference_agree():
     job_response = client.get(f"/jobs/{job_id}")
     assert job_response.status_code == 200, job_response.text
     job_body = job_response.json()
-
-    # CHANGE THIS LINE ONLY if your jobs route wraps payload differently
     result_payload = job_body["result"]["payload"]
 
     # 6. Decrypt encrypted output
@@ -111,3 +105,5 @@ def test_plain_and_encrypted_inference_agree():
 
     # 7. Compare outputs
     assert abs(plain_output - encrypted_output) < 1e-3
+
+    app.dependency_overrides.clear()

@@ -3,7 +3,6 @@ from jsonschema import ValidationError as JsonSchemaValidationError
 
 from server.core.crypto.backend import CryptoBackend
 from server.core.crypto.ciphertxt_validation import validate_ciphertext_structure
-from server.core.crypto.crypto_backends.ckks_pyfhel.context import generate_ckks_context
 from server.core.crypto.dependencies import get_crypto_backend
 from server.core.he_execution.logistic import evaluate_encrypted_logistic
 from server.core.jobs.queue import complete_job, create_job, start_job
@@ -11,12 +10,9 @@ from server.core.model_registry.registry import MODEL_REGISTRY
 from server.core.protocol.envelope_validation import validate_envelope
 from server.core.security.rate_limits import enforce_infer_rate_limit
 from server.core.security.tenanting import get_tenant_id
-from server.core.crypto.crypto_backends.ckks_pyfhel.context import CKKS_CONTEXT, generate_ckks_context
+from server.core.crypto.context_cache import get_cached_ckks_context
 
 router = APIRouter()
-
-def get_crypto_context():
-    return CKKS_CONTEXT
 
 @router.post("/infer", status_code=status.HTTP_200_OK)
 def infer(
@@ -45,19 +41,24 @@ def infer(
 
     encryption_parameters = model_meta.raw.get("encryption_parameters", {})
     try:
-        crypto_params = {
-            "scheme": model_meta.raw.get("he_scheme", "CKKS"),
-            "poly_modulus_degree": encryption_parameters["poly_modulus_degree"],
-            "coeff_modulus_bits": encryption_parameters["coeff_modulus_bits"],
-            "scale": encryption_parameters["scale"],
-        }
+        context = get_cached_ckks_context(
+            model_meta.raw.get("he_scheme", "CKKS"),
+            encryption_parameters["poly_modulus_degree"],
+            tuple(encryption_parameters["coeff_modulus_bits"]),
+            encryption_parameters["scale"],
+        )
     except KeyError as exc:
         raise HTTPException(
             status_code=500,
             detail=f"Model registry missing CKKS parameter: {exc.args[0]}",
         ) from exc
 
-    context = generate_ckks_context(crypto_params)
+    context = get_cached_ckks_context(
+        model_meta.raw.get("he_scheme", "CKKS"),
+        encryption_parameters["poly_modulus_degree"],
+        tuple(encryption_parameters["coeff_modulus_bits"]),
+        encryption_parameters["scale"],
+    )
 
     constraints = model_meta.raw.get("constraints", {})
     max_batch_size = constraints.get("max_batch_size")
