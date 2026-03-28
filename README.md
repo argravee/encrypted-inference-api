@@ -4,14 +4,13 @@
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 
 
+# Privacy-Preserving Inference Gateway (v1.0.0)
 
-# Encrypted Inference API (v1.0.0)
+A privacy-preserving inference gateway and reference implementation for machine learning that supports both a plaintext baseline path and a CKKS-based encrypted inference path.
 
-A protocol-first specification and reference implementation for privacy-preserving machine learning inference using homomorphic encryption.
+The system allows a client to discover supported models, construct a compatible CKKS session locally, encrypt inputs on the client side, submit ciphertexts to the server, retrieve encrypted inference results, and decrypt outputs locally. The server never receives plaintext inputs or the client’s secret key.
 
-The system allows a client to discover supported models, construct a compatible CKKS session locally, encrypt inputs on the client side, submit ciphertexts to the server, and receive encrypted inference results for local decryption. The server never needs the client’s secret key and never receives plaintext inputs.
-
-This repository focuses on protocol clarity, validation correctness, and implementation conformance.
+This repository focuses on protocol clarity, validation correctness, implementation conformance, and measurable privacy-performance tradeoffs between plaintext and encrypted inference.
 
 ## Motivation
 
@@ -45,7 +44,7 @@ The server is responsible for:
 - validating ciphertext structure and compatibility
 - performing homomorphic evaluation
 - storing and returning encrypted results
-- 
+  
 ## Benchmark Highlights
 
 For the reference `logistic_v1` model (`8` input features, `20` measured runs), the plaintext and encrypted inference paths now have a direct benchmark comparison:
@@ -59,16 +58,7 @@ For the reference `logistic_v1` model (`8` input features, `20` measured runs), 
 - **Mean absolute error:** `2.52e-6`
 - **Max absolute error:** `5.53e-6`
   
-The encrypted path preserves outputs very closely while introducing major latency and payload overhead relative to standard plaintext inference.
-
-### Encrypted timing breakdown
-
-- **Encryption:** `62.11 ms`
-- **Inference request:** `311.87 ms`
-- **Jobs fetch:** `5.57 ms`
-- **Decryption:** `1.07 ms`
-
-See [`docs/benchmarking.md`](docs/benchmarking.md) for methodology, raw metrics, and interpretation.
+See [`docs/benchmarking.md`](docs/benchmarking.md) for methodology, and [`docs/benchmark_results.md`](docs/benchmark_results.md) for charts, raw metrics, and interpretation.
 
 ## Architecture
 
@@ -119,7 +109,7 @@ flowchart LR
     S9 --> C7
 ````
 
-A more detailed description is available at [`architecture.md`](docs/architecture/architecture.md).
+A more detailed description is available at [`architecture.md`](docs/architectu/architecture.md).
 
 ## Quick Start
 
@@ -188,38 +178,62 @@ pytest tests/integration -v
 ## Repository Structure
 
 ```text
-docs/
-  api.md                      Human-readable protocol description
-  api/examples/               Example protocol payloads
-  architecture.md             Detailed architecture notes
+benchmarks/
+├── benchmark_inference.py        Benchmark harness
+├── generate_report_assets.py     Static chart generator
+└── results/                      Raw benchmark outputs
 
-schemas/                      JSON Schemas for requests/responses/errors
-openapi.yaml                  OpenAPI 3.1 protocol definition
+docs/
+├── api/examples/                 Example protocol payloads
+├── api.md                        Human-readable protocol description
+├── architecture/architecture.md  Detailed architecture notes
+├── benchmarking.md               Benchmark methodology + results
+└── assets/                       Generated charts + diagrams
+
+schemas/                          JSON Schemas (requests/responses/errors)
+openapi.yaml                      OpenAPI 3.1 protocol definition
 
 server/
-  app/                        FastAPI routes
-  core/
-    crypto/                   Crypto interfaces, CKKS backend, validation
-    he_execution/             Homomorphic model execution
-    jobs/                     Job state handling
-    model_registry/           Model metadata loading and validation
-    protocol/                 Envelope/schema validation
-    security/                 Rate-limiting and tenant helpers
+├── app/
+│   └── routes/                   FastAPI route handlers
+├── core/
+│   ├── crypto/
+│   │   └── crypto_backends/
+│   │       └── ckks_pyfhel/      Pyfhel CKKS backend implementation
+│   ├── he_execution/             Homomorphic model execution
+│   ├── plain_execution/          Plaintext execution (testing/debug)
+│   ├── jobs/                     Job lifecycle + queue management
+│   ├── model_registry/           Model metadata loading/validation
+│   ├── protocol/                 Envelope + schema validation
+│   └── security/                 Rate limiting + tenant helpers
 
 client/
-  src/heapi_client/
-    api.py                    Low-level HTTP wrapper
-    client.py                 High-level SDK entry point
-    discovery.py              Model discovery client
-    infer.py                  Inference submission client
-    jobs.py                   Job polling/waiting logic
-    ckks/                     CKKS session and wire helpers
+├── examples/                     Example client usage
+└── src/heapi_client/
+    ├── api.py                    Low-level HTTP wrapper
+    ├── client.py                 High-level SDK entry point
+    ├── discovery.py              Model discovery client
+    ├── infer.py                  Inference submission client
+    ├── jobs.py                   Job polling/waiting logic
+    └── ckks/                     CKKS session + wire helpers
 
 tests/
-  sdk/                        SDK/unit tests
-  server/                     Server/unit and route tests
-  integration/                Live end-to-end protocol tests
+├── sdk/                          SDK/unit tests
+├── server/                       Server/unit + route tests
+├── integration/                  End-to-end protocol tests
+└── plain/                        Plain execution tests
+
+notebooks/                        Demo + E2E walkthroughs
 ```
+## Current Artifacts
+
+- Formal JSON Schemas and OpenAPI protocol contract
+- Encrypted inference route with ciphertext validation
+- Plaintext baseline inference route
+- Python client-side encryption/decryption workflow
+- Plaintext vs encrypted agreement tests
+- Reproducible benchmark harness and result artifacts
+- Benchmark report and static visual results page
 
 ## Protocol Artifacts
 
@@ -238,18 +252,19 @@ The reference backend is included to demonstrate one valid implementation of tha
 The repository currently includes:
 
 * a versioned encrypted inference protocol
-* JSON Schemas for request, response, and error payloads
-* an OpenAPI 3.1 description of the HTTP surface
-* a Python reference server
-* a Python client/SDK
+* JSON Schemas and an OpenAPI 3.1 contract
+* a Python reference gateway/server
+* a Python client SDK
 * a CKKS reference backend using Pyfhel
-* automated tests across SDK, server, and live integration paths
+* a plaintext baseline inference path
+* plaintext vs encrypted agreement testing
+* reproducible benchmark tooling and result documentation
 
 A full live round-trip is working:
 
 **discover model → build CKKS session → encrypt locally → submit ciphertext → validate and evaluate server-side → retrieve ciphertext result → decrypt locally**
 
-This is a reference implementation, not a production deployment.
+The repository also supports side-by-side plaintext vs encrypted benchmarking for the reference model.
 
 ## Security Model
 
@@ -261,7 +276,7 @@ The intended security posture is:
 * malformed or incompatible ciphertexts should be rejected before evaluation
 * model requirements are explicit in metadata rather than implied
 
-This repository is not a full production threat model or hardened deployment guide.
+This repository is not a hardened production deployment guide. See [`docs/threat-model.md`](docs/threat-model.md) for the current threat model and assumptions.
 
 ## Non-Goals
 
