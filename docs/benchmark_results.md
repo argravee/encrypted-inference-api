@@ -15,28 +15,38 @@ This page summarizes the current benchmark comparison between the plaintext base
 
 | Metric | Plaintext | Encrypted |
 |---|---:|---:|
-| Mean latency | 3.78 ms | 380.62 ms |
-| P50 latency | 3.77 ms | 379.41 ms |
-| P95 latency | 4.45 ms | 403.25 ms |
-| Throughput | 264.77 req/s | 2.63 req/s |
+| Mean latency | 3.76 ms | 151.40 ms |
+| P50 latency | 3.67 ms | 148.42 ms |
+| P95 latency | 4.57 ms | 169.74 ms |
+| Throughput | 266.13 req/s | 6.60 req/s |
 | Mean request size | 87 B | 12,585,046 B |
 
 ### Encrypted timing breakdown
 
 | Encrypted sub-step | Mean time |
 |---|---:|
-| Encryption | 62.11 ms |
-| Inference request | 311.87 ms |
-| Jobs fetch | 5.57 ms |
-| Decryption | 1.07 ms |
+| Encryption | 62.01 ms |
+| Inference request | 84.98 ms |
+| Jobs fetch | 3.34 ms |
+| Decryption | 1.06 ms |
 
 ### Output agreement
 
 | Comparison metric | Value |
 |---|---:|
-| Mean absolute error | 2.52e-6 |
-| Max absolute error | 5.53e-6 |
+| Mean absolute error | 2.30e-6 |
+| Max absolute error | 6.82e-6 |
 | Mean request expansion ratio | 144,655.70x |
+
+## Optimization Impact
+
+After adding reusable server-side **CKKS context caching**, encrypted inference improved substantially:
+
+| Metric | Before cache | After cache |
+|---|---:|---:|
+| Encrypted mean end-to-end latency | 380.62 ms | 151.40 ms |
+| Encrypted infer-stage time | 311.87 ms | 84.98 ms |
+| Encrypted throughput | 2.63 req/s | 6.60 req/s |
 
 ## Latency Comparison
 

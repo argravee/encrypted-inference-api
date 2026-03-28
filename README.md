@@ -49,14 +49,14 @@ The server is responsible for:
 
 For the reference `logistic_v1` model (`8` input features, `20` measured runs), the plaintext and encrypted inference paths have a direct benchmark comparison:
 
-- **Plaintext mean latency:** `3.78 ms`
-- **Encrypted mean end-to-end latency:** `380.62 ms`
-- **Plaintext throughput:** `264.77 req/s`
-- **Encrypted throughput:** `2.63 req/s`
+- **Plaintext mean latency:** `3.76 ms`
+- **Encrypted mean end-to-end latency:** `151.40 ms`
+- **Plaintext throughput:** `266.13 req/s`
+- **Encrypted throughput:** `6.60 req/s`
 - **Plaintext request size:** `87 B`
 - **Encrypted request size:** `12,585,046 B`
-- **Mean absolute error:** `2.52e-6`
-- **Max absolute error:** `5.53e-6`
+- **Mean absolute error:** `2.30e-6`
+- **Max absolute error:** `6.82e-6`
   
 See [`docs/benchmarking.md`](docs/benchmarking.md) for methodology, and [`docs/benchmark_results.md`](docs/benchmark_results.md) for charts, raw metrics, and interpretation.
 
