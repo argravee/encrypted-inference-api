@@ -6,7 +6,7 @@
 
 # Privacy-Preserving Inference Gateway (v1.0.0)
 
-A privacy-preserving inference gateway and reference implementation for machine learning that supports both a plaintext baseline path and a CKKS-based encrypted inference path.
+A privacy-preserving inference gateway and reference implementation for machine learning inference that supports both a plaintext baseline path and a CKKS-based encrypted inference path.
 
 The system allows a client to discover supported models, construct a compatible CKKS session locally, encrypt inputs on the client side, submit ciphertexts to the server, retrieve encrypted inference results, and decrypt outputs locally. The server never receives plaintext inputs or the client’s secret key.
 
