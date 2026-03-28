@@ -8,3 +8,4 @@ jsonschema
 pytest
 requests
 pytest-cov
+matplotlib
