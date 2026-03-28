@@ -47,7 +47,7 @@ The server is responsible for:
   
 ## Benchmark Highlights
 
-For the reference `logistic_v1` model (`8` input features, `20` measured runs), the plaintext and encrypted inference paths now have a direct benchmark comparison:
+For the reference `logistic_v1` model (`8` input features, `20` measured runs), the plaintext and encrypted inference paths have a direct benchmark comparison:
 
 - **Plaintext mean latency:** `3.78 ms`
 - **Encrypted mean end-to-end latency:** `380.62 ms`
